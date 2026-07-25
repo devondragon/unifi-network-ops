@@ -1,0 +1,17 @@
+# Never commit anything captured from a live controller.
+# Snapshots contain cleartext WPA passphrases, device SSH passwords, IPS utm_token,
+# and per-device x_authkey. See skills/capturing-a-unifi-baseline/SKILL.md.
+*/raw/
+**/raw/
+*.unf
+baseline/
+unifi-baseline-*/
+unifi-rf-samples-*.txt
+
+# Key material
+*.key
+.unifi_key
+*_key
+*.pem
+
+.DS_Store
