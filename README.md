@@ -84,20 +84,49 @@ same LAN.
 
 ### 4. Work through the skills in order
 
-You do not invoke skills by name. Describe the task and Claude loads the matching one.
-The order below is the order the skills expect, and each step gates the next.
+Invoke each skill explicitly with a slash command, then add your own prompt after it.
+Claude can also load these automatically when your request matches, but invoking them by
+name is worth doing here: you get a deterministic result and you can see that the right
+skill loaded, which matters most at step 5 where the wrong answer reprovisions your APs.
 
-| Step | Ask Claude | Skill that loads | Writes to the network? |
-|---|---|---|---|
-| 1 | "Capture a baseline of my UniFi site before we change anything" | `capturing-a-unifi-baseline` | No |
-| 2 | "Take a before reading of RF performance" | `tuning-unifi-wifi-rf` | No |
-| 3 | "Audit my WiFi performance and propose a channel and power plan" | `tuning-unifi-wifi-rf` | No |
-| 4 | "Review my network's security posture" | `reviewing-unifi-security` | No |
-| 5 | "Apply change N from the plan" | `applying-unifi-changes` | **Yes** |
-| 6 | "Take an after reading and compare to the baseline" | `tuning-unifi-wifi-rf` | No |
+The skill name depends on how you installed:
 
-Steps 1 through 4 are entirely read-only. You can run all of them on a production network
-in the middle of the day without disturbing anything.
+| Install method | Invoke as |
+|---|---|
+| Plugin (recommended) | `/unifi-network-ops:capturing-a-unifi-baseline` |
+| Manual symlink | `/capturing-a-unifi-baseline` |
+
+Examples below use the plugin form. Type `/` and start typing `unifi` to autocomplete.
+
+**Steps 1 through 4 are entirely read-only.** You can run all of them against a production
+network in the middle of the day without disturbing anything. Only step 5 writes.
+
+```
+1.  /unifi-network-ops:capturing-a-unifi-baseline
+    capture a full baseline of my site before we change anything
+
+2.  /unifi-network-ops:tuning-unifi-wifi-rf
+    take a before reading of RF performance across all my APs
+
+3.  /unifi-network-ops:tuning-unifi-wifi-rf
+    audit my WiFi performance and propose a channel and power plan.
+    my APs are in the four corners of the main floor, one in the basement
+
+4.  /unifi-network-ops:reviewing-unifi-security
+    review my network's security posture. I care most about keeping IoT
+    devices away from my main LAN
+
+5.  /unifi-network-ops:applying-unifi-changes          <-- WRITES TO THE NETWORK
+    apply change 1 from the plan
+
+6.  /unifi-network-ops:tuning-unifi-wifi-rf
+    take an after reading and compare it to the before run
+```
+
+Step 3 is worth giving real detail to. The channel plan depends on where your APs
+physically are, and the skill cannot infer that. Tell it your layout, which rooms matter,
+and anything that must not break, such as an outdoor camera or a device that is painful
+to re-pair.
 
 **Step 1** also runs the snapshot script, which is what makes everything after it
 reversible:
