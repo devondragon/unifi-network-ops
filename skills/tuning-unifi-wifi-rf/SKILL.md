@@ -66,15 +66,25 @@ dramatically better. Retry % is retries ÷ total transmissions, and a fix collap
 denominator. Worse, relieving congestion makes rate adaptation ambitious: clients that
 crawled at reliable 1–2 Mbps now attempt 72 Mbps+ and occasionally miss.
 
-**Weight it by utilization before concluding anything:**
+**Weight it by utilization before concluding anything.** Real six-sample medians from a
+five-AP site before and after a channel/power plan:
 
 | Radio | Before (util × retry) | Lost | After | Lost | Verdict |
 |---|---|---|---|---|---|
-| AP-1 2.4 | 90% × 5.4% | 4.86 | 21% × 14.1% | 2.96 | better |
-| AP-2 2.4 | 82% × 10.0% | 8.20 | 19% × 15.2% | 2.89 | better |
+| AP-1 2.4 | 90% × 5.4% | 4.86 | 27% × 12.6% | 3.40 | better |
+| AP-2 2.4 | 82% × 10.0% | 8.20 | 15% × 25.0% | 3.75 | better |
+| AP-5 2.4 | 12% × 7.7% | 0.92 | 12.5% × 20.8% | 2.60 | **worse** |
+| **Total** | | **21.30** | | **12.40** | **−42%** |
 
-Retry % nearly tripled on AP-2 while its actual airtime lost to retransmission fell by
-two-thirds. Rough 2.4 GHz thresholds: <10% quiet · 10–20% normal · 20–30% investigate ·
+Retry % **rose on every radio**, and on AP-2 it went up 2.5× — while the airtime it
+actually loses to retransmission more than halved. Reading the percentage alone would
+have condemned a change that cut total retry airtime by 42%.
+
+The same arithmetic also finds the one genuine regression: AP-5's airtime barely moved
+but its retries tripled, so its absolute cost nearly tripled too. **Weighting is what
+separates the real problem from the four false alarms.**
+
+Rough 2.4 GHz thresholds: <10% quiet · 10–20% normal · 20–30% investigate ·
 >30% sustained is real.
 
 ### `tx_rate` is the last frame's rate, not the client's capability
@@ -322,7 +332,19 @@ radio appear perfectly stable. Use an interval of 300 s or more; the script warn
 
 ## Real-World Impact
 
-Five-AP site, before → after a manual channel/power plan built on these rules:
-total 2.4 GHz airtime **265% → 98%**, worst radio **90% → 30%**, mean 2.4 GHz client
-rate **52 → 79 Mbps**, clients stuck at ≤2 Mbps **8 → 0**, clients below 80 satisfaction
-**7 → 1**. No devices lost. Absolute airtime spent on retransmission fell ~51%.
+Five-AP site, before → after a manual channel/power plan built on these rules. Figures are
+**six-sample medians** taken in the same evening window as the baseline:
+
+- Total 2.4 GHz airtime **265% → 80.5%**; 5 GHz **55% → 17.5%**
+- Airtime lost to retransmission **−42%** on 2.4 GHz, **−68%** on 5 GHz
+- Mean 2.4 GHz client rate **52 → 79 Mbps**; clients stuck at ≤2 Mbps **8 → 0**
+- Associated clients **59 → 59** — nothing was lost
+
+**A note on these numbers.** The first write-up of this work was based on single samples
+taken about an hour after the change, and published *total airtime 98%* and *retry
+reduction −51%*. The six-sample run revised both: airtime was actually **better** (80.5%)
+and the retry reduction **worse** (−42%) than the single sample suggested — errors in
+opposite directions, from the same data source, one day apart.
+
+That is the whole argument for multi-sampling. If you publish a single-sample number,
+say so, and go back and correct it.
