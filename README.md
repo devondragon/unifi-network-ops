@@ -225,6 +225,10 @@ separately if you would rather invoke them from somewhere you control.
 4. min-RSSI evicts clients; it does not steer them.
 5. A security finding is only worth raising if it is real under this owner's threat model.
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
+
 ## License
 
 [Apache License 2.0](LICENSE), Copyright 2026 Devon Hillard.
