@@ -71,4 +71,8 @@ done
 
 ## License
 
-MIT
+[Apache License 2.0](LICENSE) — Copyright 2026 Devon Hillard.
+
+Note the scripts write to live network hardware. The license's "AS IS" warranty
+disclaimer (§7) and limitation of liability (§8) apply in full: verify against your own
+controller before trusting anything here on a network you care about.
