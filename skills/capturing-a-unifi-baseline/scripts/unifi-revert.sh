@@ -116,17 +116,31 @@ if [ -n "$LIVE" ]; then
   echo
 fi
 
+# Blast radius depends entirely on the object type. Saying "radios will bounce" for a
+# client-database write trains people to ignore the warning.
+case "$TYPE" in
+  device)     IMPACT="Reprovisions this device. Radios bounce; its clients drop ~30s (~100s if the target is a DFS channel).";;
+  wlanconf)   IMPACT="SITE-WIDE reprovision. Every AP re-applies WLANs; expect all wireless clients to drop briefly.";;
+  networkconf|portconf)
+              IMPACT="Reprovisions switches/gateway carrying affected ports. Wired ports on this network may bounce.";;
+  user)       IMPACT="Client DB record only. No device is reprovisioned and no radio bounces. Takes effect on the client's next association.";;
+  setting)    IMPACT="Varies by setting key. Security/IPS settings usually do not bounce radios; wireless settings can.";;
+  *)          IMPACT="Unknown blast radius for type '$TYPE'. Assume a reprovision until you have checked.";;
+esac
+
 if [ "$APPLY" != 1 ]; then
   cat <<EOF
 DRY RUN — nothing was written.
 
+Blast radius: $IMPACT
+
 Re-run with --apply to restore. Before you do:
-  - confirm the outage window with whoever depends on this network
-  - expect radios to bounce and clients to drop for ~30s (~100s if a DFS channel is involved)
+  - confirm the window with whoever depends on this network, if the impact above is non-trivial
   - re-read the object after the write and verify the RUNTIME state, not just the config
 EOF
   exit 0
 fi
+echo "Blast radius: $IMPACT"
 
 echo "APPLYING..."
 RESP=$(curl -sk -m 30 -X PUT -H "X-API-KEY: $KEY" -H 'Content-Type: application/json' \
