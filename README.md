@@ -255,6 +255,18 @@ separately if you would rather invoke them from somewhere you control.
 4. min-RSSI evicts clients; it does not steer them.
 5. A security finding is only worth raising if it is real under this owner's threat model.
 
+## Contributing
+
+```bash
+./tests/run.sh
+```
+
+Runs `bash -n`, shellcheck, and the behavioural tests: credential precedence, every
+Keychain failure cause, and a check that no header line has fallen out of `--help`. No
+network, no controller, no credentials — the macOS Keychain and `curl` are both stubbed,
+so the whole suite runs anywhere. GitHub Actions runs the same script on Linux and macOS
+for every pull request.
+
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md).

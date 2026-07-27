@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Continuous verification.** `tests/run.sh` runs `bash -n`, shellcheck, and two
+  behavioural test files — credential precedence and every Keychain failure cause, plus a
+  check that no header line has fallen out of any script's `--help`. The macOS Keychain
+  and `curl` are stubbed, so the suite needs no network, controller, or credentials and
+  covers the macOS-only code paths on Linux too. GitHub Actions runs it on Linux and macOS
+  for every push and pull request.
+
 ## [1.1.0] - 2026-07-27
 
 ### Added
