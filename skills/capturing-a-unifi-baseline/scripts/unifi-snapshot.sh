@@ -12,6 +12,8 @@
 #   UNIFI_GW        gateway/console host or IP   (default 192.168.1.1)
 #   UNIFI_SITE      internal site name           (default: auto-detected, falls back to "default")
 #   UNIFI_KEY       API key, inline
+#   UNIFI_KEY_KEYCHAIN         macOS Keychain service name — opt-in; unset = feature off
+#   UNIFI_KEY_KEYCHAIN_ACCOUNT Keychain account for the above  (default $USER)
 #   UNIFI_KEY_FILE  file containing the API key  (default ~/.config/unifi/key)
 #   SKIP_BACKUP=1   skip the native .unf backup (faster; loses full-restore capability)
 #
@@ -25,7 +27,7 @@ set -uo pipefail
 
 case "${1:-}" in
   -h|--help)
-    sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,28p' "$0" | sed 's/^# \{0,1\}//'
     exit 0
     ;;
 esac
@@ -37,6 +39,16 @@ KEYFILE="${UNIFI_KEY_FILE:-$HOME/.config/unifi/key}"
 # ---- credential ------------------------------------------------------------------
 if [ -n "${UNIFI_KEY:-}" ]; then
   KEY="$UNIFI_KEY"
+elif [ -n "${UNIFI_KEY_KEYCHAIN:-}" ] && command -v security >/dev/null; then
+  # macOS only, opt-in. Fails loudly rather than falling through to $KEYFILE: if you asked
+  # for the Keychain and it has no answer, a stale file key is the wrong thing to succeed with.
+  KCACCT="${UNIFI_KEY_KEYCHAIN_ACCOUNT:-${USER:-$(id -un)}}"
+  KEY=$(security find-generic-password -a "$KCACCT" -s "$UNIFI_KEY_KEYCHAIN" -w 2>/dev/null)
+  if [ -z "$KEY" ]; then
+    echo "FATAL: no key in the macOS Keychain for service '$UNIFI_KEY_KEYCHAIN', account '$KCACCT'." >&2
+    echo "       Store one: security add-generic-password -a \"\$USER\" -s $UNIFI_KEY_KEYCHAIN -w 'KEY' -U" >&2
+    exit 1
+  fi
 elif [ -r "$KEYFILE" ]; then
   KEY=$(tr -d '\r\n' < "$KEYFILE")
 else

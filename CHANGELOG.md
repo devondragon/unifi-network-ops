@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **macOS Keychain as a credential source.** All three scripts can read the API key from
+  the login Keychain instead of a file on disk. Opt in by setting `UNIFI_KEY_KEYCHAIN` to
+  the Keychain service name; `UNIFI_KEY_KEYCHAIN_ACCOUNT` overrides the account, which
+  defaults to `$USER`. Resolution order is `UNIFI_KEY`, then `UNIFI_KEY_KEYCHAIN`, then
+  `UNIFI_KEY_FILE`. Leaving `UNIFI_KEY_KEYCHAIN` unset changes nothing, and every new code
+  path is behind a `command -v security` guard, so Linux and Docker users are unaffected.
+  A Keychain lookup that returns nothing is a fatal error naming the service and account
+  rather than a silent fall-through to the file, so a revoked or renamed item cannot be
+  masked by a stale key on disk.
+
 ## [1.0.0] - 2026-07-26
 
 Initial release. Four Claude Code skills and three scripts for auditing, tuning, and

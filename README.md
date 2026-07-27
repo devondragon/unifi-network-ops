@@ -70,6 +70,28 @@ export UNIFI_KEY_FILE=~/.config/unifi/key
 key out of your shell history and process list. Add both to your shell profile if you
 will be doing this more than once.
 
+<details>
+<summary>Alternative: macOS Keychain (macOS only, opt-in)</summary>
+
+If you are on macOS and would rather not keep the key on disk in cleartext, store it in
+the login Keychain instead:
+
+```bash
+security add-generic-password -a "$USER" -s unifi-api-key -w 'PASTE_KEY_HERE' -U
+export UNIFI_KEY_KEYCHAIN=unifi-api-key
+```
+
+`UNIFI_KEY_KEYCHAIN` is the Keychain **service** name. The account defaults to `$USER`;
+override it with `UNIFI_KEY_KEYCHAIN_ACCOUNT` if you stored it under a different one.
+
+This is entirely opt-in. Leaving `UNIFI_KEY_KEYCHAIN` unset changes nothing, and the file
+above stays the portable default — it is the only option that works on Linux and in
+Docker. If `UNIFI_KEY_KEYCHAIN` is set but the lookup finds nothing, the scripts stop with
+an error rather than quietly falling back to the file, so a revoked or renamed Keychain
+item cannot be masked by a stale key on disk.
+
+</details>
+
 ### 3. Confirm it works before anything else
 
 ```bash
@@ -186,7 +208,8 @@ nothing writes to a live network without it.
 ## Scripts
 
 All are POSIX-ish bash, need only `curl` and `jq`, and take credentials from
-`UNIFI_KEY` or `UNIFI_KEY_FILE`. Nothing is ever hardcoded.
+`UNIFI_KEY`, `UNIFI_KEY_KEYCHAIN` (macOS only, opt-in), or `UNIFI_KEY_FILE`, in that
+order of precedence. Nothing is ever hardcoded.
 
 | Script | Safety |
 |---|---|
