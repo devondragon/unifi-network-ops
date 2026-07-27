@@ -1,5 +1,9 @@
 # shellcheck shell=bash
 # Shared helpers. Sourced by the test scripts; not executable on its own.
+#
+# The script paths below are consumed by the files that source this one, which shellcheck
+# cannot see from here — hence the file-wide SC2034 exemption.
+# shellcheck disable=SC2034
 
 REPO_ROOT=${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}
 SNAPSHOT="$REPO_ROOT/skills/capturing-a-unifi-baseline/scripts/unifi-snapshot.sh"
