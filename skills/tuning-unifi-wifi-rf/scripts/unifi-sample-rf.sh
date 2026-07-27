@@ -43,7 +43,7 @@ if [ -n "${UNIFI_KEY:-}" ]; then KEY="$UNIFI_KEY"
 elif [ -n "${UNIFI_KEY_KEYCHAIN:-}" ] && command -v security >/dev/null; then   # macOS only, opt-in
   KCACCT="${UNIFI_KEY_KEYCHAIN_ACCOUNT:-${USER:-$(id -un)}}"
   KEY=$(security find-generic-password -a "$KCACCT" -s "$UNIFI_KEY_KEYCHAIN" -w 2>/dev/null); KCRC=$?
-  [ -n "$KEY" ] || { echo "FATAL: Keychain lookup failed for service '$UNIFI_KEY_KEYCHAIN', account '$KCACCT' (security rc=$KCRC; 44 = no such item, anything else = locked or denied)." >&2; exit 1; }
+  [ -n "$KEY" ] || { echo "FATAL: Keychain lookup failed for service '$UNIFI_KEY_KEYCHAIN', account '$KCACCT' (security rc=$KCRC; 0 = item is empty, 44 = no such item, anything else = locked or denied)." >&2; exit 1; }
 elif [ -r "$KEYFILE" ]; then KEY=$(tr -d '\r\n' < "$KEYFILE")
 else echo "FATAL: no API key (UNIFI_KEY, UNIFI_KEY_KEYCHAIN, or $KEYFILE)." >&2; exit 1; fi
 
