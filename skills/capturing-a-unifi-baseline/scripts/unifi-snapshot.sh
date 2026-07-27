@@ -45,12 +45,17 @@ elif [ -n "${UNIFI_KEY_KEYCHAIN:-}" ] && command -v security >/dev/null; then
   KCACCT="${UNIFI_KEY_KEYCHAIN_ACCOUNT:-${USER:-$(id -un)}}"
   KEY=$(security find-generic-password -a "$KCACCT" -s "$UNIFI_KEY_KEYCHAIN" -w 2>/dev/null); KCRC=$?
   if [ -z "$KEY" ]; then
-    # rc 44 is genuinely "no such item". Any other rc (locked keychain, denied or cancelled
-    # auth prompt) means the item may well exist and be fine — so do not suggest -U there,
-    # which would overwrite a working credential to fix a problem that was only a lock.
+    # rc 44 is genuinely "no such item". rc 0 with no value means the item exists but was
+    # stored empty — easy to do, since security's -w prompt asks twice and a mismatch on
+    # the retype silently leaves you entering an empty password. Any other rc (locked
+    # keychain, denied or cancelled auth prompt) means the item may well exist and be fine,
+    # so do not suggest -U there: that would overwrite a working credential to fix a lock.
     if [ "$KCRC" -eq 44 ]; then
       echo "FATAL: no Keychain item for service '$UNIFI_KEY_KEYCHAIN', account '$KCACCT'." >&2
       echo "       Store one: security add-generic-password -a \"\$USER\" -s $UNIFI_KEY_KEYCHAIN -U -w" >&2
+    elif [ "$KCRC" -eq 0 ]; then
+      echo "FATAL: the Keychain item for service '$UNIFI_KEY_KEYCHAIN', account '$KCACCT' is empty." >&2
+      echo "       Re-store it: security add-generic-password -a \"\$USER\" -s $UNIFI_KEY_KEYCHAIN -U -w" >&2
     else
       echo "FATAL: could not read the Keychain item for service '$UNIFI_KEY_KEYCHAIN', account '$KCACCT'" >&2
       echo "       (security exited $KCRC — the keychain is locked, or access was denied)." >&2
