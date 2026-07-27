@@ -3,20 +3,25 @@
 #
 #   ./tests/run.sh
 set -uo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 status=0
+
+# --others picks up files that are not committed yet. Without it a brand-new script is
+# silently skipped locally and then fails in CI, which is exactly how the first run of
+# this workflow failed.
+shell_files() { git ls-files --cached --others --exclude-standard '*.sh'; }
 
 echo "== syntax =="
 while IFS= read -r f; do
   if bash -n "$f"; then printf '  ok    %s\n' "$f"; else status=1; fi
-done < <(git ls-files '*.sh')
+done < <(shell_files)
 
 if command -v shellcheck >/dev/null; then
   echo
   echo "== shellcheck =="
   # SC2012 (ls instead of find) is long-standing and deliberate here, and is info-level.
-  if git ls-files '*.sh' | xargs shellcheck --severity=warning; then
+  if shell_files | xargs shellcheck --severity=warning; then
     echo "  ok    no warnings"
   else
     status=1
