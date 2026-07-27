@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-27
+
 ### Added
 
 - **macOS Keychain as a credential source.** All three scripts can read the API key from
@@ -18,6 +20,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   A Keychain lookup that returns nothing is a fatal error naming the service and account
   rather than a silent fall-through to the file, so a revoked or renamed item cannot be
   masked by a stale key on disk.
+
+### Changed
+
+- The README now stores the key with `security add-generic-password ... -U -w`, which
+  prompts for the value instead of taking it as an argument, keeping it out of shell
+  history and the process list — the same reason a key file is preferred over inline
+  `UNIFI_KEY`.
+- The quick start's "confirm it works" step no longer assumes the key file, so it works
+  for readers who chose the Keychain.
+- `capturing-a-unifi-baseline/SKILL.md` documents the full credential precedence. It only
+  described the key file, so the Keychain option was invisible to the skill itself.
+
+### Fixed
+
+- A failed Keychain lookup now reports what actually went wrong. It previously said the
+  item was missing whatever the cause, and suggested `-U`, which updates in place — so a
+  merely locked keychain led you to overwrite a working credential. Missing (`rc 44`),
+  present but empty (`rc 0`), and locked or denied are now distinct messages, and only the
+  first two suggest storing a key.
+- The no-API-key error names `UNIFI_KEY_KEYCHAIN`, so mistyping the variable no longer
+  produces a message implying the option does not exist.
 
 ## [1.0.0] - 2026-07-26
 
@@ -95,5 +118,6 @@ process corrected four errors before release:
   discarded as methodologically void.
 - UniFi Protect, Access, and Talk are different APIs and are out of scope.
 
-[Unreleased]: https://github.com/devondragon/unifi-network-ops/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/devondragon/unifi-network-ops/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/devondragon/unifi-network-ops/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/devondragon/unifi-network-ops/releases/tag/v1.0.0

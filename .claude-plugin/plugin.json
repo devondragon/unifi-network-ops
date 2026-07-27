@@ -1,7 +1,7 @@
 {
   "name": "unifi-network-ops",
   "description": "Skills for auditing, tuning, and safely changing UniFi networks through the controller API. Covers baseline capture, RF/channel planning, the write path, and security review.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "license": "Apache-2.0",
   "author": {
     "name": "Devon Hillard"
