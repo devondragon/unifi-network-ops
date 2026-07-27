@@ -43,16 +43,24 @@ elif [ -n "${UNIFI_KEY_KEYCHAIN:-}" ] && command -v security >/dev/null; then
   # macOS only, opt-in. Fails loudly rather than falling through to $KEYFILE: if you asked
   # for the Keychain and it has no answer, a stale file key is the wrong thing to succeed with.
   KCACCT="${UNIFI_KEY_KEYCHAIN_ACCOUNT:-${USER:-$(id -un)}}"
-  KEY=$(security find-generic-password -a "$KCACCT" -s "$UNIFI_KEY_KEYCHAIN" -w 2>/dev/null)
+  KEY=$(security find-generic-password -a "$KCACCT" -s "$UNIFI_KEY_KEYCHAIN" -w 2>/dev/null); KCRC=$?
   if [ -z "$KEY" ]; then
-    echo "FATAL: no key in the macOS Keychain for service '$UNIFI_KEY_KEYCHAIN', account '$KCACCT'." >&2
-    echo "       Store one: security add-generic-password -a \"\$USER\" -s $UNIFI_KEY_KEYCHAIN -w 'KEY' -U" >&2
+    # rc 44 is genuinely "no such item". Any other rc (locked keychain, denied or cancelled
+    # auth prompt) means the item may well exist and be fine — so do not suggest -U there,
+    # which would overwrite a working credential to fix a problem that was only a lock.
+    if [ "$KCRC" -eq 44 ]; then
+      echo "FATAL: no Keychain item for service '$UNIFI_KEY_KEYCHAIN', account '$KCACCT'." >&2
+      echo "       Store one: security add-generic-password -a \"\$USER\" -s $UNIFI_KEY_KEYCHAIN -U -w" >&2
+    else
+      echo "FATAL: could not read the Keychain item for service '$UNIFI_KEY_KEYCHAIN', account '$KCACCT'" >&2
+      echo "       (security exited $KCRC — the keychain is locked, or access was denied)." >&2
+    fi
     exit 1
   fi
 elif [ -r "$KEYFILE" ]; then
   KEY=$(tr -d '\r\n' < "$KEYFILE")
 else
-  echo "FATAL: no API key. Set UNIFI_KEY, or write one to $KEYFILE (chmod 600)." >&2
+  echo "FATAL: no API key. Set UNIFI_KEY or UNIFI_KEY_KEYCHAIN, or write one to $KEYFILE (chmod 600)." >&2
   echo "       Create a key at: UniFi UI -> Settings -> Control Plane -> Integrations" >&2
   exit 1
 fi

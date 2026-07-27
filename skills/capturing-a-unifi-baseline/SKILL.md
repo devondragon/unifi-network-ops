@@ -79,6 +79,15 @@ KEY=$(cat ~/.config/unifi/key)     # never hardcode, never echo
 curl -sk -H "X-API-KEY: $KEY" "https://$GW/proxy/network/api/s/default/stat/device"
 ```
 
+The scripts here resolve the key from `UNIFI_KEY`, then `UNIFI_KEY_KEYCHAIN` (macOS
+Keychain **service** name, opt-in; account defaults to `$USER`, override with
+`UNIFI_KEY_KEYCHAIN_ACCOUNT`), then `UNIFI_KEY_FILE` (default `~/.config/unifi/key`), in
+that order. On macOS the Keychain equivalent of the above is:
+
+```bash
+KEY=$(security find-generic-password -a "$USER" -s unifi-api-key -w)
+```
+
 **What an API key cannot do.** Some endpoints return 404 to a key credential that a
 browser session reads fine. Confirmed 404 with a key: `stat/event` (historical event log).
 Do **not** conclude the feature is off or the path is wrong — test the same path with a
