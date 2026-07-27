@@ -77,9 +77,13 @@ If you are on macOS and would rather not keep the key on disk in cleartext, stor
 the login Keychain instead:
 
 ```bash
-security add-generic-password -a "$USER" -s unifi-api-key -w 'PASTE_KEY_HERE' -U
+security add-generic-password -a "$USER" -s unifi-api-key -U -w
 export UNIFI_KEY_KEYCHAIN=unifi-api-key
 ```
+
+With `-w` last and no value after it, `security` prompts for the key instead of taking it
+as an argument — so it stays out of your shell history and the process list, the same
+reason the file above is preferred over inline `UNIFI_KEY`.
 
 `UNIFI_KEY_KEYCHAIN` is the Keychain **service** name. The account defaults to `$USER`;
 override it with `UNIFI_KEY_KEYCHAIN_ACCOUNT` if you stored it under a different one.
@@ -95,8 +99,11 @@ item cannot be masked by a stale key on disk.
 ### 3. Confirm it works before anything else
 
 ```bash
+KEY=$(cat ~/.config/unifi/key)
+# Keychain instead? KEY=$(security find-generic-password -a "$USER" -s unifi-api-key -w)
+
 curl -sk -o /dev/null -w '%{http_code}\n' \
-  -H "X-API-KEY: $(cat ~/.config/unifi/key)" \
+  -H "X-API-KEY: $KEY" \
   "https://$UNIFI_GW/proxy/network/integration/v1/sites"
 ```
 

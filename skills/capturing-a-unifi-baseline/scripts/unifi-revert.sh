@@ -47,10 +47,10 @@ KEYFILE="${UNIFI_KEY_FILE:-$HOME/.config/unifi/key}"
 if [ -n "${UNIFI_KEY:-}" ]; then KEY="$UNIFI_KEY"
 elif [ -n "${UNIFI_KEY_KEYCHAIN:-}" ] && command -v security >/dev/null; then   # macOS only, opt-in
   KCACCT="${UNIFI_KEY_KEYCHAIN_ACCOUNT:-${USER:-$(id -un)}}"
-  KEY=$(security find-generic-password -a "$KCACCT" -s "$UNIFI_KEY_KEYCHAIN" -w 2>/dev/null)
-  [ -n "$KEY" ] || { echo "FATAL: no key in the macOS Keychain for service '$UNIFI_KEY_KEYCHAIN', account '$KCACCT'." >&2; exit 1; }
+  KEY=$(security find-generic-password -a "$KCACCT" -s "$UNIFI_KEY_KEYCHAIN" -w 2>/dev/null); KCRC=$?
+  [ -n "$KEY" ] || { echo "FATAL: Keychain lookup failed for service '$UNIFI_KEY_KEYCHAIN', account '$KCACCT' (security rc=$KCRC; 44 = no such item, anything else = locked or denied)." >&2; exit 1; }
 elif [ -r "$KEYFILE" ]; then KEY=$(tr -d '\r\n' < "$KEYFILE")
-else echo "FATAL: no API key (UNIFI_KEY or $KEYFILE)." >&2; exit 1; fi
+else echo "FATAL: no API key (UNIFI_KEY, UNIFI_KEY_KEYCHAIN, or $KEYFILE)." >&2; exit 1; fi
 
 A="https://${GW}/proxy/network/api/s/${SITE}"
 
