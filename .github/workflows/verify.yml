@@ -1,0 +1,32 @@
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      # tests/run.sh is the whole suite: bash -n, shellcheck (skipped where it is not
+      # installed — ubuntu-latest ships it), and the two behavioural test files. Running
+      # exactly what a contributor runs locally keeps the two from drifting apart.
+      #
+      # Both platforms are worth it even though the scripts are identical files: the
+      # Keychain branch is driven by a stub `security`, so Linux covers macOS-only code,
+      # while the macOS job is the only place a real `security` is on PATH and the
+      # "feature is inert where security is absent" case is correctly skipped.
+      - name: run checks
+        run: ./tests/run.sh
