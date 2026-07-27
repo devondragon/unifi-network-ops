@@ -15,7 +15,7 @@
 #   --interval  seconds between samples  (default 420 = 7 min; 6x420 covers ~42 min)
 #   --label     free text recorded in the header (e.g. "pre-change", "24h settled")
 #
-# Env: UNIFI_GW, UNIFI_SITE, UNIFI_KEY / UNIFI_KEY_FILE  (see unifi-snapshot.sh)
+# Env: UNIFI_GW, UNIFI_SITE, UNIFI_KEY / UNIFI_KEY_KEYCHAIN / UNIFI_KEY_FILE  (see unifi-snapshot.sh)
 #
 # COMPARE LIKE WITH LIKE: run the "after" pass at the same time of day as the "before".
 # Household RF load has a strong daily cycle. Also note that AP reboots reset these
@@ -40,6 +40,10 @@ OUT="${OUT:-./unifi-rf-samples-$(date +%Y%m%d-%H%M).txt}"
 KEYFILE="${UNIFI_KEY_FILE:-$HOME/.config/unifi/key}"
 
 if [ -n "${UNIFI_KEY:-}" ]; then KEY="$UNIFI_KEY"
+elif [ -n "${UNIFI_KEY_KEYCHAIN:-}" ] && command -v security >/dev/null; then   # macOS only, opt-in
+  KCACCT="${UNIFI_KEY_KEYCHAIN_ACCOUNT:-${USER:-$(id -un)}}"
+  KEY=$(security find-generic-password -a "$KCACCT" -s "$UNIFI_KEY_KEYCHAIN" -w 2>/dev/null)
+  [ -n "$KEY" ] || { echo "FATAL: no key in the macOS Keychain for service '$UNIFI_KEY_KEYCHAIN', account '$KCACCT'." >&2; exit 1; }
 elif [ -r "$KEYFILE" ]; then KEY=$(tr -d '\r\n' < "$KEYFILE")
 else echo "FATAL: no API key (UNIFI_KEY or $KEYFILE)." >&2; exit 1; fi
 
