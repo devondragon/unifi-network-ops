@@ -134,7 +134,8 @@ grab() {
   code=$(req -o "$f" -w '%{http_code}' "$url")
   if [ "$code" != "200" ]; then
     printf '  %-22s HTTP %s\n' "$name" "$code"
-    # 404 on an API key is expected for some endpoints; record it, don't fail the run.
+    # 404 (and 400 on some controller versions) is expected for some endpoints on an
+    # API key; record the code in the filename, don't fail the run.
     mv "$f" "$f.http${code}" 2>/dev/null
     return
   fi
@@ -164,7 +165,8 @@ grab stat_sta         "$A/stat/sta"
 grab stat_health      "$A/stat/health"
 grab stat_rogueap     "$A/stat/rogueap"
 grab sysinfo          "$A/stat/sysinfo"
-grab list_alarm       "$A/list/alarm"
+grab list_alarm       "$A/list/alarm"             # 200 on Network 10.4.57, 400 on 10.5.67
+grab ipsalert         "$A/rest/ipsalert"
 grab stat_event       "$A/stat/event?_limit=500"   # commonly 404s on an API-key credential
 if [ -n "$SITE_UUID" ]; then
   grab integration_devices "$I1/sites/${SITE_UUID}/devices"

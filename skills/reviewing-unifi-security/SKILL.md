@@ -121,10 +121,16 @@ IPS on total LAN throughput.
 
 ### Zero alerts is not automatically proof of anything
 
-`list/alarm` and `rest/ipsalert` returning 200 with 0 items is plausible for a site with
-no inbound exposure. But some alert endpoints 404 to an API-key credential, so you may be
+`rest/ipsalert` returning 200 with 0 items is plausible for a site with no inbound
+exposure. But some alert endpoints refuse an API-key credential outright, so you may be
 unable to distinguish "nothing happened" from "this credential cannot read alerts."
-**State which of the two you actually verified.**
+**State which of the two you actually verified**, and name the endpoint that gave you the
+200 — "zero alerts" backed by one working endpoint is a narrower claim than it sounds.
+
+Which endpoints answer a key **changes across controller versions**: `list/alarm` answered
+200 on Network 10.4.57 and returns `400 api.err.InvalidObject` on 10.5.67. So a report that
+was honest when written can quietly decay into an overclaim. Re-probe before repeating a
+zero-alert finding from a previous session — see `capturing-a-unifi-baseline`.
 
 ---
 
