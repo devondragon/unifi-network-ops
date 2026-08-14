@@ -134,8 +134,8 @@ grab() {
   code=$(req -o "$f" -w '%{http_code}' "$url")
   if [ "$code" != "200" ]; then
     printf '  %-22s HTTP %s\n' "$name" "$code"
-    # 404 (and 400 on some controller versions) is expected for some endpoints on an
-    # API key; record the code in the filename, don't fail the run.
+    # 404 (and 400 on some controller versions) is expected for some endpoints with an
+    # API key credential; record the code in the filename, don't fail the run.
     mv "$f" "$f.http${code}" 2>/dev/null
     return
   fi
