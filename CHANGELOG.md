@@ -7,8 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`list/alarm` no longer claimed to answer an API-key credential.** It returned 200 on
+  Network 10.4.57 and returns `400 api.err.InvalidObject` on 10.5.67 against the same key
+  and site, so `capturing-a-unifi-baseline` and `reviewing-unifi-security` both overstated
+  what a key can read. The surviving alert endpoint is `rest/ipsalert`.
+
 ### Added
 
+- **Which endpoints answer an API key is documented as per-*version*, not just
+  per-endpoint.** `capturing-a-unifi-baseline` now says to re-probe after a controller
+  upgrade and gives a loop that prints the status code for each endpoint you depend on,
+  and distinguishes this 400 from the superficially similar 400 you get by passing a
+  site's display name to the Integration API. `reviewing-unifi-security` now requires a
+  zero-alert finding to name the endpoint that produced the 200, since a report that was
+  honest when written can decay into an overclaim after an upgrade.
+- `unifi-snapshot.sh` captures `rest/ipsalert` alongside `list/alarm`, so the snapshot
+  keeps an alert record on controller versions where `list/alarm` refuses the key.
 - **Continuous verification.** `tests/run.sh` runs `bash -n`, shellcheck, and two
   behavioural test files — credential precedence and every Keychain failure cause, plus a
   check that no header line has fallen out of any script's `--help`. The macOS Keychain

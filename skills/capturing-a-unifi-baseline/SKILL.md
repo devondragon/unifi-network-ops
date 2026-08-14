@@ -94,7 +94,24 @@ Do **not** conclude the feature is off or the path is wrong — test the same pa
 local-admin session before drawing any conclusion.
 
 Endpoints that *do* answer a key despite looking like they belong in the same family:
-`list/alarm` and `rest/ipsalert`. Verify per-endpoint rather than assuming a category.
+`rest/ipsalert`. Verify per-endpoint rather than assuming a category.
+
+**And re-verify after a controller upgrade — this is per-version, not just per-endpoint.**
+`list/alarm` answered a key credential with 200 on Network **10.4.57** and returns
+**`400 api.err.InvalidObject`** on **10.5.67** against the same key and the same site. A
+note from a previous session is evidence about the version it was written on, nothing more.
+Re-probe the endpoints you depend on after an upgrade:
+
+```bash
+for ep in list/alarm rest/ipsalert stat/event; do
+  printf '%-16s %s\n' "$ep" \
+    "$(curl -sk -o /dev/null -w '%{http_code}' -H "X-API-KEY: $KEY" "$API/$ep")"
+done
+```
+
+Note a 400 here is not the same failure as the 400 you get from passing a site's display
+name to the Integration API. Both are "malformed request" in the abstract; this one means
+the endpoint no longer accepts the credential class, not that you built the URL wrong.
 
 **Local admin login** (when you need event history):
 
