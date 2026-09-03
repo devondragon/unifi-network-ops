@@ -124,6 +124,24 @@ overlap, so they share airtime through CSMA/CA. **Adjacent-channel overlap (e.g.
 is strictly worse** because the frames corrupt rather than defer. Never "split the
 difference" onto channel 3 or 9.
 
+### An interferer that belongs to one of your own clients moves with that client
+
+Some IoT devices (alarm panels, thermostats, cameras) keep a pairing hotspot running
+forever, on a BSSID one off from their client MAC. That hotspot is single-radio: it sits on
+**the channel of whichever AP the device's client side is associated to.** It will read in
+`stat/rogueap` as a fixed neighbor on one channel for as long as the client stays put, and
+then jump the moment the client roams — typically after an outage, when it re-associates to
+whichever AP answered first.
+
+One site planned around "channel 6 is permanently occupied" for six weeks, with a
+sacrificial AP on ch6 to absorb it. After a power outage the client re-associated to a
+different AP and the hotspot appeared on ch11 at −53 dBm, co-channel with the one radio
+the plan most needed clean. Three snapshots matched the client's AP channel every time.
+
+Check consecutive MACs (`…:2f` client, `…:30` BSSID) before treating a rogue as external.
+If it is one of yours, **pin the client** to the AP whose channel you want the interferer
+on, and treat it as a standing watch item rather than a fixed feature of the RF plan.
+
 ### 5 GHz: think in 80 MHz blocks, not channels
 
 At 80 MHz width, a channel number implies a whole block. Two APs on "different channels"

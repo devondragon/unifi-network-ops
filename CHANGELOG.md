@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **A rogue BSSID owned by one of your own clients follows that client.** `tuning-unifi-wifi-rf`
+  now covers IoT pairing hotspots that share the channel of whichever AP the device's client
+  radio is on: they look like a fixed neighbor until the client roams (typically after an
+  outage), then jump channels. Check for consecutive MACs and pin the client rather than
+  re-planning channels around it.
 - **Which endpoints answer an API key is documented as per-*version*, not just
   per-endpoint.** `capturing-a-unifi-baseline` now says to re-probe after a controller
   upgrade and gives a loop that prints the status code for each endpoint you depend on,
