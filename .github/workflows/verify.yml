@@ -18,7 +18,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # tests/run.sh is the whole suite: bash -n, shellcheck (skipped where it is not
       # installed — ubuntu-latest ships it), and the two behavioural test files. Running
