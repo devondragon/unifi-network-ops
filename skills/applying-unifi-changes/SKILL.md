@@ -181,6 +181,41 @@ before starting the next class. Order that works well:
 
 ---
 
+## Creating a network: test DHCP for real
+
+Observed on Network 10.6 with switch DHCP snooping on (`global_switch.dhcp_snoop: true`):
+a network created over the API came up with its gateway interface and DHCP server
+reported `up`, clients associated on the right VLAN, and a static address could ping the
+gateway, yet DHCP DISCOVERs never got an OFFER. Firewall changes, removing the network
+from IDS, toggling `dhcpd_enabled`, and force-provisioning the gateway all failed to fix
+it. Toggling `dhcp_snoop` off and back on fixed it, with snooping left on. Each toggle
+reprovisions every switch.
+
+```bash
+# PUT rest/setting/global_switch/<id>  {"dhcp_snoop":false}  -> wait for switches state 1
+# PUT rest/setting/global_switch/<id>  {"dhcp_snoop":true}   -> wait again, then retest
+```
+
+**Test with a fresh DISCOVER, not a client rejoin.** A client that already held a lease
+on the subnet reuses it via `INIT-REBOOT` plus an ARP check of the router, with no DHCP
+exchange at all. From an AP that carries the VLAN:
+
+```bash
+udhcpc -i br0.<vlan> -n -q -f -s /bin/true   # -s /bin/true: don't apply the address
+```
+
+**Copy the full field set.** A minimal `POST rest/networkconf` produces an object missing
+about 20 fields the UI sets, including `enabled` and `dhcpd_leasetime`. Copy them from an
+existing network of the same `purpose` rather than relying on defaults.
+
+**Zone firewall details on a new zone:** creating a zone generates predefined policies
+(block to other internal zones, allow to External, **allow all to Gateway**). A
+user-defined ALLOW to Gateway with `create_allow_respond: true` is rejected ("create
+respond traffic not allowed") because the return path already exists. Policy `hits` on
+the v2 API are not live counters; do not diagnose from them.
+
+---
+
 ## Deleting a network needs a real reference audit
 
 UniFi enforces referential integrity and will reject the delete. Checking shared port
@@ -262,6 +297,7 @@ Valid enum values that are easy to guess wrong:
 | "`rc: ok` means it worked" | Gated fields silently no-op. Read back and diff. |
 | "Config reads back right, so it applied" | Runtime can differ. Check `radio_table_stats`. |
 | Omitting a field to clear it | PUT merges. The old value survives. |
+| "The new network's DHCP server is up, so DHCP works" | Switch DHCP snooping can drop it. Test with a fresh DISCOVER; toggle `dhcp_snoop` to reprovision. |
 | Building payloads in a temp file in a loop | `noclobber` re-sends the first payload to every object. |
 | Batching radio + WLAN changes | Overlapping reprovisions wedge APs in `INIT`. |
 | Trusting your own "unreferenced" pre-flight | Check `port_overrides` and `virtual_network_override_id`. |

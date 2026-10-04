@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`applying-unifi-changes`: creating a network.** A new VLAN can get no DHCP OFFERs
+  while switch DHCP snooping is on, even though every L2/L3 test passes; toggling
+  `dhcp_snoop` off and on fixed it. Also covers testing DHCP with a fresh DISCOVER rather
+  than a cached-lease rejoin, the fields a minimal `networkconf` POST omits, and
+  zone-policy details for a new zone.
+
 ### Fixed
 
 - **`list/alarm` no longer claimed to answer an API-key credential.** It returned 200 on
