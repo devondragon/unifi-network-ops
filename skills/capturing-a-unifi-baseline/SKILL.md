@@ -93,7 +93,7 @@ browser session reads fine. Confirmed 404 with a key: `stat/event` (historical e
 Do **not** conclude the feature is off or the path is wrong — test the same path with a
 local-admin session before drawing any conclusion.
 
-Endpoints that *do* answer a key despite looking like they belong in the same family:
+One endpoint that *does* answer a key despite looking like it belongs in the same family:
 `rest/ipsalert`. Verify per-endpoint rather than assuming a category.
 
 **And re-verify after a controller upgrade — this is per-version, not just per-endpoint.**
@@ -103,6 +103,7 @@ note from a previous session is evidence about the version it was written on, no
 Re-probe the endpoints you depend on after an upgrade:
 
 ```bash
+API="https://$GW/proxy/network/api/s/default"   # legacy API base; swap in your site's internal name
 for ep in list/alarm rest/ipsalert stat/event; do
   printf '%-16s %s\n' "$ep" \
     "$(curl -sk -o /dev/null -w '%{http_code}' -H "X-API-KEY: $KEY" "$API/$ep")"

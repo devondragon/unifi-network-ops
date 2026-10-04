@@ -27,7 +27,7 @@ for script in "$SNAPSHOT" "$REVERT" "$SAMPLE_RF"; do
   missing=0
   while IFS= read -r line; do
     [ -z "$line" ] && continue
-    printf '%s\n' "$help" | grep -Fxq "$line" || { missing=$((missing + 1)); printf '        missing: %s\n' "$line"; }
+    grep -Fxq -- "$line" <<<"$help" || { missing=$((missing + 1)); printf '        missing: %s\n' "$line"; }
   done < <(header_lines "$script")
   assert_eq "$missing" "0" "$name: every header line reaches --help"
 done
