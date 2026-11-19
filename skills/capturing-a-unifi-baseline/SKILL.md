@@ -93,8 +93,10 @@ browser session reads fine. Confirmed 404 with a key: `stat/event` (historical e
 Do **not** conclude the feature is off or the path is wrong — test the same path with a
 local-admin session before drawing any conclusion.
 
-One endpoint that *does* answer a key despite looking like it belongs in the same family:
-`rest/ipsalert`. Verify per-endpoint rather than assuming a category.
+One endpoint that answered a key through Network 10.x despite looking like it belongs in
+the same family: `rest/ipsalert`. On **11.0.103** it also returns
+**`400 api.err.InvalidObject`**, which leaves a key credential with no IPS alert endpoint.
+Verify per-endpoint rather than assuming a category.
 
 **And re-verify after a controller upgrade — this is per-version, not just per-endpoint.**
 `list/alarm` answered a key credential with 200 on Network **10.4.57** and returns
